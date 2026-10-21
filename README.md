@@ -63,7 +63,13 @@ O código não contém login fictício, troca de perfil, reset de demonstração
 
 A estrutura do banco foi instalada no projeto Supabase escolhido em 21/10/2026, pela migração `maple_check_initial_schema`. O login das integrações Supabase e GitHub foi liberado. A validação do fluxo de autenticação depende da configuração de SMTP. A implantação na Vercel ainda não foi realizada.
 
-A sincronização Sponte ainda não está implementada: falta confirmar qual API foi habilitada e seu contrato de dados. Não há cron ativo. O horário solicitado é 00:00 de Brasília. Quando implementada, a integração será executada exclusivamente no servidor; a aplicação consultará seu próprio banco. A ausência de um aluno em uma resposta não será tratada automaticamente como inativação.
+A sincronização SOAP do Sponte está implementada no servidor. A atualização `supabase/sponte-sync.sql` foi instalada no projeto escolhido em 21/10/2026. O teste com as credenciais reais ainda precisa ser concluído após publicar esta versão. A ausência de um aluno em uma resposta não é tratada como inativação.
+
+Configure as variáveis de `.env.example` em Production na Vercel. `SUPABASE_SECRET_KEY` deve ser uma chave `sb_secret_...` do projeto escolhido; `CRON_SECRET` deve ter pelo menos 32 caracteres aleatórios. As chaves privadas nunca podem ter prefixo `NEXT_PUBLIC_`.
+
+Após entrar no app, use **Sincronizar Sponte**. Todos os usuários institucionais confirmados podem iniciar a consulta, limitada a um sucesso por dia em Brasília; erros exigem intervalo de 15 minutos para nova tentativa. **Atualizar lista** consulta apenas nosso Supabase. O agendamento usa `0 3 * * *` (00:00 em Brasília); no plano Hobby a Vercel não garante o minuto exato e pode executar dentro dessa hora. Verifique a adequação do plano para uso institucional: Hobby se destina a uso pessoal não comercial.
+
+Cada execução faz três consultas de leitura ao serviço oficial (situações, alunos e contratos), valida a resposta inteira e grava um lote atômico. O conector preserva zeros nas matrículas e resolve cadastros por identificador oficial ou matrícula, nunca somente por nome. Mantém checklists, histórico e bloqueios de exclusão. Situações personalizadas e contratos ambíguos interrompem a importação com um código de diagnóstico, sem gravação parcial. Confira esses casos na primeira execução real.
 
 ## Verificação
 
@@ -72,11 +78,11 @@ Os testes de domínio e do SQL usam dados artificiais. O SQL é executado em Pos
 ### Situação conferida em 21/10/2026
 
 - Compilação de produção concluída, incluindo a verificação de TypeScript.
-- 30 testes automatizados de domínio e banco aprovados.
+- 45 testes automatizados de domínio, banco e integração aprovados; build de produção aprovado com as duas rotas de sincronização.
 - Servidor de produção local respondeu HTTP 200 em `http://127.0.0.1:3000`.
 - A verificação visual final em computador/celular está pendente: não havia navegador disponível para automação nesta sessão.
 - Banco instalado: três tabelas com RLS, acesso direto negado aos usuários e às sessões anônimas, duas funções públicas com acesso restrito a sessões autenticadas. Os modelos possuem 16 e 15 itens, respectivamente; nenhum aluno foi inserido pela instalação.
 - O Security Advisor retornou três avisos informativos de RLS sem políticas, esperados para as tabelas privadas acessadas exclusivamente pelas funções verificadas, e um aviso de proteção contra senhas vazadas desabilitada. Referência: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
 - PostCSS atualizado para 8.5.31, incluindo a dependência transitiva do Next. A auditoria passou de 11 para 9 alertas (5 altos e 4 moderados), sem críticos. Restam dependências transitivas de Tailwind e ExcelJS/uuid; precisam de avaliação de compatibilidade antes da liberação operacional. Não foi aplicado `audit fix --force`.
 
-Para liberar o uso da secretaria: configurar e testar os e-mails de autenticação, publicar na Vercel e verificar cadastro/checklist/exclusão com contas reais de cada perfil. A sincronização e a aprovação dependente da validação do Sponte continuam aguardando a definição da API.
+Para liberar o uso da secretaria: configurar e testar os e-mails de autenticação, publicar na Vercel, testar a primeira importação Sponte e verificar cadastro/checklist/exclusão com contas reais de cada perfil.

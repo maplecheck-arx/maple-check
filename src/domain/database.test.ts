@@ -26,7 +26,7 @@ async function ativar(registro: Registro) {
 beforeAll(async () => {
   db = new PGlite();
   await db.exec(`
-    create role anon; create role authenticated;
+    create role anon; create role authenticated; create role service_role;
     create schema auth;
     create table auth.users (id uuid primary key, email text, email_confirmed_at timestamptz, is_anonymous boolean default false, banned_until timestamptz, raw_user_meta_data jsonb default '{}');
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
@@ -37,9 +37,87 @@ beforeAll(async () => {
       ('${ids.pendente}','pendente@maplebeararaxa.com.br',null,'{}');
   `);
   await db.exec(readFileSync(resolve('supabase/schema.sql'), 'utf8'));
+  await db.exec(readFileSync(resolve('supabase/sponte-sync.sql'), 'utf8'));
 }, 60000);
-beforeEach(async () => { await db.exec('reset role; truncate secretaria.registros, secretaria.exclusoes;'); await entrar('normal'); });
+beforeEach(async () => { await db.exec('reset role; truncate secretaria.registros, secretaria.exclusoes; update secretaria.sponte_sync set run_id=null,iniciado_em=null,expira_em=null,ultimo_sucesso=null;'); await entrar('normal'); });
 afterAll(async () => { await db?.close(); });
+
+async function sync(acao: string, execucao: string | null = null, dados: unknown = {}) {
+  const result = await db.query<{ result: { executar?: boolean; execucao?: string; motivo?: string; sucesso?: boolean; resumo?: Record<string, number> } }>('select public.secretaria_sponte($1,$2,$3::jsonb) as result', [acao, execucao, JSON.stringify(dados)]);
+  return result.rows[0].result;
+}
+async function iniciarSync() {
+  await db.exec('reset role; set role service_role');
+  const result = await sync('iniciar');
+  expect(result.executar).toBe(true);
+  return result.execucao!;
+}
+const oficial = { externalId: '42', matricula: '0042', nome: 'Nome oficial', curso: 'Year 1', turma: 'A', situacao: 'ativo', dataCadastroSponte: '2026-09-01' };
+async function liberarProximoDia() {
+  await db.exec("reset role; update secretaria.sponte_sync set ultimo_sucesso=now()-interval '1 day',iniciado_em=now()-interval '1 day'; set role service_role;");
+}
+describe('Sincronização real: transações e isolamento', () => {
+  it('nega importação a usuários e anônimos; impede execuções concorrentes e repetição no dia', async () => {
+    await expect(sync('iniciar')).rejects.toThrow(/permission denied/);
+    await db.exec('reset role; set role anon');
+    await expect(sync('iniciar')).rejects.toThrow(/permission denied/);
+    const id = await iniciarSync();
+    expect((await sync('iniciar')).motivo).toBe('em_andamento');
+    await sync('concluir', id, [oficial]);
+    expect((await sync('iniciar')).motivo).toBe('atualizado_hoje');
+  });
+  it('concilia por matrícula, mantém marcações e revoga formulário com revisão antiga', async () => {
+    const local = await cadastrar();
+    await executar('marcar', local, { itemId: 'nm_reserva', valor: true });
+    const id = await iniciarSync();
+    await sync('concluir', id, [oficial]);
+    await entrar('normal');
+    const state = await db.query<{ aluno: Aluno; processo: ProcessoMatricula }>("select r->'aluno' as aluno,r->'processo' as processo from jsonb_array_elements(public.secretaria_estado()->'registros') r");
+    expect(state.rows).toHaveLength(1);
+    expect(state.rows[0].aluno).toMatchObject({ id: local.aluno.id, nome: 'Nome oficial', validadoSponte: true, externalId: '42' });
+    expect(state.rows[0].processo.itens[0].concluido).toBe(true);
+    await expect(executar('editar', local, { nome: 'Nome antigo' })).rejects.toThrow(/Outro usuário/);
+  });
+  it('não altera revisão quando nada mudou; arquiva somente inatividade explícita', async () => {
+    await sync('concluir', await iniciarSync(), [oficial, { ...oficial, matricula: '99', externalId: '99', situacao: 'inativo' }]);
+    await liberarProximoDia();
+    const same = await sync('concluir', await iniciarSync(), [oficial]);
+    expect(same.resumo?.atualizados).toBe(0);
+    await liberarProximoDia();
+    await sync('concluir', await iniciarSync(), [{ ...oficial, situacao: 'inativo', curso: '', turma: '' }]);
+    await entrar('normal');
+    const state = await db.query<{ a: Aluno }>("select public.secretaria_estado()->'registros'->0->'aluno' as a");
+    expect(state.rows[0].a).toMatchObject({ situacao: 'inativo', curso: 'Year 1' });
+  });
+  it('reverte todo o lote em caso de conflito de identidade', async () => {
+    const id = await iniciarSync();
+    await expect(sync('concluir', id, [oficial, { ...oficial, externalId: '999' }])).rejects.toThrow(/duplicadas/);
+    await db.exec('reset role');
+    expect((await db.query<{ total: number }>('select count(*)::int as total from secretaria.registros')).rows[0].total).toBe(0);
+  });
+  it('não reimporta excluído mesmo quando a origem muda a matrícula', async () => {
+    await sync('concluir', await iniciarSync(), [oficial]);
+    await entrar('admin');
+    const state = await db.query<{ r: Registro }>("select public.secretaria_estado()->'registros'->0 as r");
+    await executar('excluir', state.rows[0].r);
+    await liberarProximoDia();
+    const result = await sync('concluir', await iniciarSync(), [{ ...oficial, matricula: 'NOVA-0042' }]);
+    expect(result.resumo?.excluidosIgnorados).toBe(1);
+    expect(result.resumo?.novos).toBe(0);
+  });
+  it('preserva versões do checklist ao corrigir a data e rejeita execução vencida', async () => {
+    await cadastrar();
+    await sync('concluir', await iniciarSync(), [{ ...oficial, dataCadastroSponte: '2026-08-31' }]);
+    await entrar('normal');
+    const state = await db.query<{ p: ProcessoMatricula }>("select public.secretaria_estado()->'registros'->0->'processo' as p");
+    expect(state.rows[0].p.tipo).toBe('REMATRICULA');
+    expect(state.rows[0].p.versoesAnteriores).toHaveLength(1);
+    await liberarProximoDia();
+    const id = await iniciarSync();
+    await db.exec("reset role; update secretaria.sponte_sync set expira_em=now()-interval '1 second'; set role service_role");
+    await expect(sync('concluir', id, [oficial])).rejects.toThrow(/expirada/);
+  });
+});
 
 describe('Banco: identidade, permissões e transações', () => {
   it('nega leitura anônima e escrita direta, sem depender da interface', async () => {

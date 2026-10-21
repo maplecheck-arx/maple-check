@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 import { Header, ActiveTab } from '../components/ui/Header';
 import { StudentTable } from '../components/students/StudentTable';
 import { LoadingView } from '../components/ui/LoadingView';
+import { SponteStatus } from '../components/ui/SponteStatus';
 import { calcularMetricasOperacionais } from '../services/metrics';
 import { Users, CheckCircle2, Clock3, AlertCircle, Plus, ArrowUpRight, CalendarDays } from 'lucide-react';
 
@@ -22,7 +23,7 @@ const pageInfo: Record<ActiveTab, { title: string; description: string }> = {
 };
 
 export default function Home() {
-  const { isAuthenticated, recuperandoSenha, alunos, processos, salvando, atualizarDados } = useApp();
+  const { isAuthenticated, recuperandoSenha, alunos, processos, salvando } = useApp();
   const [activeTab, setActiveTab] = useState<ActiveTab>('operacional');
   const [selectedAlunoId, setSelectedAlunoId] = useState<string | null>(null);
   const [showNovoAlunoModal, setShowNovoAlunoModal] = useState(false);
@@ -42,7 +43,7 @@ export default function Home() {
       <Header activeTab={activeTab} onTabChange={setActiveTab} onOpenNovoAluno={() => setShowNovoAlunoModal(true)} />
       <div className="workspace">
         <main id="main-content" className="app-content">
-          <div className="integration-status"><span><span className="status-dot" />Sponte: aguardando liberação da integração</span><button className="text-button" disabled={salvando} onClick={() => void atualizarDados()}>{salvando ? 'Salvando…' : 'Atualizar lista'}</button></div>
+          <SponteStatus />
           <div className="page-heading">
             <div><div className="page-eyebrow"><CalendarDays size={14} />Secretaria / Ano letivo 2027</div><h1>{info.title}</h1><p>{info.description}</p></div>
             {(activeTab === 'operacional' || activeTab === 'provisorios') && <button type="button" className="primary-button" onClick={() => setShowNovoAlunoModal(true)}><Plus size={18} />Cadastrar aluno</button>}

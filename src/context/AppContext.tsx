@@ -8,7 +8,9 @@ import { getSupabase, mensagemErro } from '../lib/supabase';
 type Resultado = { success: boolean; error?: string };
 type Registro = { aluno: Aluno; processo: ProcessoMatricula; versao: number };
 type DadosAluno = Partial<Pick<Aluno, 'nome' | 'curso' | 'turma' | 'dataCadastroSponte' | 'jaEstudouOutraInstituicao'>>;
+type SponteStatus = { status: string; ultimaSyncSucesso: string | null; ultimaSyncTentativa: string | null; codigoErro?: string | null };
 interface AppContextType {
+  sponte: SponteStatus | null;
   alunos: Aluno[];
   processos: ProcessoMatricula[];
   currentUser: User | null;
@@ -31,6 +33,7 @@ const AppContext = createContext<AppContextType | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [registros, setRegistros] = useState<Registro[]>([]);
+  const [sponte, setSponte] = useState<SponteStatus | null>(null);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [recuperandoSenha, setRecuperandoSenha] = useState(false);
   const [salvando, setSalvando] = useState(false);
@@ -64,6 +67,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (seq !== sequencia.current || !ativo.current) return;
       if (!data?.user || !Array.isArray(data.registros)) throw new Error('Resposta inválida do banco. Tente atualizar novamente.');
       guardar(data.registros);
+      setSponte(data.sponte || null);
       setCurrentUser(data.user);
       setErroConexao(null);
     } catch (error) {
@@ -90,6 +94,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           usuarioId.current = session?.user.id || null;
           ++sequencia.current;
           guardar([]); setCurrentUser(null);
+          setSponte(null);
         }
         if (event === 'SIGNED_OUT') { setRecuperandoSenha(false); setErroConexao(null); }
         // Supabase auth holds a session lock during this callback.
@@ -147,7 +152,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   if (carregando) return <LoadingView fullScreen label="Conectando à secretaria…" />;
   return <AppContext.Provider value={{
-    alunos: registros.map(r => r.aluno), processos: registros.map(r => r.processo), currentUser,
+    alunos: registros.map(r => r.aluno), processos: registros.map(r => r.processo), currentUser, sponte,
     isAuthenticated: !!currentUser, recuperandoSenha, salvando, erroConexao,
     revisoes: Object.fromEntries(registros.map(r => [r.aluno.id, r.versao])),
     atualizarDados: carregar, finalizarRecuperacao: () => setRecuperandoSenha(false), loginComCredenciais, logout,
