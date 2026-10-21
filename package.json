@@ -1,0 +1,42 @@
+{
+  "name": "maple-check",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
+    "clsx": "^2.1.1",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
+    "jspdf": "4.2.1",
+    "jspdf-autotable": "5.0.9",
+    "lucide-react": "^0.475.0",
+    "next": "^15.1.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.0.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.11",
+    "@types/file-saver": "^2.0.7",
+    "@types/node": "24.19.2",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "8.5.31",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "postcss": "$postcss"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
