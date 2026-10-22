@@ -38,10 +38,10 @@ export function parseSoap(xml: string, method: Method): Row[] {
   const tag = { GetAlunos4: 'wsAluno', GetMatriculas: 'wsMatricula', GetSituacoesAlunos: 'wsSituacoesAlunos' }[method];
   if (result !== '' && (!result || typeof result !== 'object' || !(tag in result))) throw new SponteError('RESPOSTA_INVALIDA');
   const entries = rows(result?.[tag]);
-  if (entries.length === 1 && /^43(?:\D|$)/.test(text(entries[0].RetornoOperacao))) return [];
+  if (entries.length === 1 && /^0*43(?:\D|$)/.test(text(entries[0].RetornoOperacao))) return [];
   for (const entry of entries) {
     // The manual enumerates 1 (success) and 200 (OK). Never forward remote messages.
-    const code = text(entry.RetornoOperacao).match(/^(\d+)(?:\D|$)/)?.[1];
+    const code = text(entry.RetornoOperacao).match(/^(\d+)(?:\D|$)/)?.[1]?.replace(/^0+(?=\d)/, '');
     if (code !== '1' && code !== '200') throw new SponteError(code && ['23', '24', '25'].includes(code) ? `ACESSO_SPONTE_${code}` : 'RETORNO_SPONTE_INVALIDO', {
       method,
       // Only bounded numeric status codes are diagnostic data; never retain remote prose.

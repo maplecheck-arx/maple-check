@@ -8,6 +8,14 @@ const contract = { AlunoID: '42', SituacaoID: '1', DataInicio: '01/01/2027', Dat
 const catalog = [{ SituacoesAlunos: { SituacoesAlunos: [{ SituacaoAlunoID: '-1', Nome: 'Ativo' }, { SituacaoAlunoID: '-2', Nome: 'Inativo' }] } }];
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 describe('Conector SOAP Sponte', () => {
+  it('aceita códigos com zero à esquerda sem alterar identificadores dos alunos', () => {
+    const xml = envelope('<wsAluno><RetornoOperacao>01</RetornoOperacao><NumeroMatricula>0042</NumeroMatricula></wsAluno>');
+    expect(parseSoap(xml, 'GetAlunos4')[0].NumeroMatricula).toBe('0042');
+    expect(parseSoap(xml.replace(/GetAlunos4/g, 'GetSituacoesAlunos').replace(/wsAluno/g, 'wsSituacoesAlunos'), 'GetSituacoesAlunos')).toHaveLength(1);
+    expect(parseSoap(envelope('<wsAluno><RetornoOperacao>043 Nenhum registro</RetornoOperacao></wsAluno>'), 'GetAlunos4')).toEqual([]);
+    expect(() => parseSoap(envelope('<wsAluno><RetornoOperacao>025 Token inválido</RetornoOperacao></wsAluno>'), 'GetAlunos4')).toThrow('ACESSO_SPONTE_25');
+    expect(() => parseSoap(envelope('<wsAluno><RetornoOperacao>00</RetornoOperacao></wsAluno>'), 'GetAlunos4')).toThrow('RETORNO_SPONTE_INVALIDO');
+  });
   it('preserva o código e método de rejeição sem registrar texto remoto ou dados pessoais', () => {
     for (const [value, returnCode, returnFormat] of [
       ['21 informe parâmetro segredo', '21', 'numeric'],
