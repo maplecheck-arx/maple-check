@@ -117,16 +117,19 @@ export function normalizeStudents(students: Row[], contracts: Row[], catalog: Ro
     const situacao = status === active[0] ? 'ativo' : 'inativo';
     // Prefer a valid contract covering 2027, then a currently valid contract.
     // A closed historical contract must not deactivate an active student.
-    const candidates = (byStudent.get(id) || []).filter(c => ['1', '6'].includes(text(c.SituacaoID))).map(c => ({
-      c, start: civilDate(c.DataInicio), end: civilDate(c.DataTermino),
-    })).filter(c => c.start && c.end && c.start <= c.end).map(c => ({ ...c,
+    const candidates = (byStudent.get(id) || []).filter(c => ['1', '6'].includes(text(c.SituacaoID))).flatMap(c => {
+      // Contracts enrich course/turma only; unusable contract dates must not block a student.
+      try { return [{ c, start: civilDate(c.DataInicio), end: civilDate(c.DataTermino) }]; }
+      catch (error) { if (error instanceof SponteError && error.code === 'DATA_SPONTE_INVALIDA') return []; throw error; }
+    }).filter(c => c.start && c.end && c.start <= c.end).map(c => ({ ...c,
       rank: c.start! <= '2027-12-31' && c.end! >= '2027-01-01' ? 2 : c.start! <= today && c.end! >= today ? 1 : 0,
     })).filter(c => c.rank > 0).sort((a, b) => b.rank - a.rank || b.start!.localeCompare(a.start!));
     const best = candidates[0];
     const ties = candidates.filter(c => best && c.rank === best.rank && c.start === best.start);
-    if (situacao === 'ativo' && (!best || ties.some(c => text(c.c.NomeCurso) !== text(best.c.NomeCurso) || text(c.c.NomeTurma) !== text(best.c.NomeTurma)))) throw new SponteError('CONTRATO_AUSENTE_OU_AMBIGUO');
-    const curso = text(best?.c.NomeCurso), turma = text(best?.c.NomeTurma);
-    if ((situacao === 'ativo' && !curso) || curso.length > 100 || turma.length > 100) throw new SponteError('CURSO_SPONTE_INVALIDO');
+    const unambiguous = best && !ties.some(c => text(c.c.NomeCurso) !== text(best.c.NomeCurso) || text(c.c.NomeTurma) !== text(best.c.NomeTurma));
+    const curso = (unambiguous ? text(best.c.NomeCurso) : '') || 'Não informado';
+    const turma = (unambiguous ? text(best.c.NomeTurma) : '') || text(student.TurmaAtual);
+    if (curso.length > 100 || turma.length > 100) throw new SponteError('CURSO_SPONTE_INVALIDO');
     // Explicit allowlist: no CPF, passwords, contact details or raw XML leave this adapter.
     return { externalId: id, matricula, nome, curso, turma, situacao, dataCadastroSponte: civilDate(student.DataCadastro) };
   });

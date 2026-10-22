@@ -71,13 +71,19 @@ describe('Conector SOAP Sponte', () => {
     expect(JSON.stringify(result)).not.toContain('NAO_IMPORTAR');
   });
   it('não deduz situação do aluno a partir de contrato encerrado', () => {
-    expect(() => normalizeStudents([student], [{ ...contract, SituacaoID: '2' }], catalog, '2026-10-21')).toThrow('CONTRATO_AUSENTE_OU_AMBIGUO');
+    expect(normalizeStudents([student], [{ ...contract, SituacaoID: '2' }], catalog, '2026-10-21')[0]).toMatchObject({ situacao: 'ativo', curso: 'Não informado' });
     expect(normalizeStudents([{ ...student, Situacao: 'Inativo' }], [], catalog, '2026-10-21')[0].situacao).toBe('inativo');
   });
-  it('bloqueia situações desconhecidas, identidades repetidas e cursos ambíguos', () => {
+  it('bloqueia situações desconhecidas e identidades repetidas', () => {
     expect(() => normalizeStudents([{ ...student, Situacao: 'Personalizada' }], [contract], catalog, '2026-10-21')).toThrow('SITUACAO_NAO_MAPEADA');
     expect(() => normalizeStudents([student, student], [contract], catalog, '2026-10-21')).toThrow('IDENTIDADE_SPONTE_INVALIDA');
-    expect(() => normalizeStudents([student], [contract, { ...contract, NomeCurso: 'Year 2' }], catalog, '2026-10-21')).toThrow('CONTRATO_AUSENTE_OU_AMBIGUO');
+  });
+  it('importa alunos sem contrato elegível ou com contratos ambíguos sem inventar curso', () => {
+    for (const contracts of [[], [{ ...contract, DataInicio: 'inválida' }], [contract, { ...contract, NomeCurso: 'Year 2' }]]) {
+      expect(normalizeStudents([{ ...student, TurmaAtual: 'Turma oficial' }], contracts, catalog, '2026-10-21')[0]).toMatchObject({
+        externalId: '42', situacao: 'ativo', curso: 'Não informado', turma: 'Turma oficial',
+      });
+    }
   });
   it('nega cron e sincronização sem autenticação antes de qualquer consulta externa', async () => {
     const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher);
