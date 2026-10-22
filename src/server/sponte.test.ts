@@ -66,21 +66,27 @@ describe('Conector SOAP Sponte', () => {
     expect(() => civilDate('31/02/2026')).toThrow('DATA_SPONTE_INVALIDA');
   });
   it('prioriza contrato de 2027 e descarta dados pessoais não necessários', () => {
-    const result = normalizeStudents([student], [{ ...contract, DataInicio: '01/01/2026', DataTermino: '31/12/2026', NomeCurso: 'SK' }, contract], catalog, '2026-10-21');
+    const { alunos: result } = normalizeStudents([student], [{ ...contract, DataInicio: '01/01/2026', DataTermino: '31/12/2026', NomeCurso: 'SK' }, contract], catalog, '2026-10-21');
     expect(result[0]).toEqual({ externalId: '42', matricula: '0042', nome: 'Aluno teste', situacao: 'ativo', curso: 'Year 1', turma: 'Y1-A', dataCadastroSponte: '2026-09-01' });
     expect(JSON.stringify(result)).not.toContain('NAO_IMPORTAR');
   });
   it('não deduz situação do aluno a partir de contrato encerrado', () => {
-    expect(normalizeStudents([student], [{ ...contract, SituacaoID: '2' }], catalog, '2026-10-21')[0]).toMatchObject({ situacao: 'ativo', curso: 'Não informado' });
-    expect(normalizeStudents([{ ...student, Situacao: 'Inativo' }], [], catalog, '2026-10-21')[0].situacao).toBe('inativo');
+    expect(normalizeStudents([student], [{ ...contract, SituacaoID: '2' }], catalog, '2026-10-21').alunos[0]).toMatchObject({ situacao: 'ativo', curso: 'Não informado' });
+    expect(normalizeStudents([{ ...student, Situacao: 'Inativo' }], [], catalog, '2026-10-21').alunos[0].situacao).toBe('inativo');
   });
-  it('bloqueia situações desconhecidas e identidades repetidas', () => {
-    expect(() => normalizeStudents([{ ...student, Situacao: 'Personalizada' }], [contract], catalog, '2026-10-21')).toThrow('SITUACAO_NAO_MAPEADA');
+  it('pula situações não mapeadas informando só nomes do catálogo, e bloqueia identidades repetidas', () => {
+    const fullCatalog = [{ SituacoesAlunos: { SituacoesAlunos: [...catalog[0].SituacoesAlunos.SituacoesAlunos, { SituacaoAlunoID: '5', Nome: 'Trancado' }] } }];
+    const lead = { AlunoID: '43', NumeroMatricula: '', Nome: 'Interessado', Situacao: 'trancado' };
+    const result = normalizeStudents([student, lead, { ...lead, AlunoID: '44' }, { ...lead, AlunoID: '45', Situacao: 'segredo pessoal' }, { ...lead, AlunoID: '46', Situacao: '' }], [contract], fullCatalog, '2026-10-21');
+    expect(result.alunos.map(a => a.externalId)).toEqual(['42']);
+    expect(result.situacoesPuladas).toEqual([{ situacao: 'Trancado', total: 2 }, { situacao: 'Fora do catálogo', total: 1 }, { situacao: 'Sem situação', total: 1 }]);
+    expect(JSON.stringify(result)).not.toContain('segredo');
+    expect(() => normalizeStudents([{ ...student, Situacao: 'Personalizada' }], [contract], catalog, '2026-10-21')).toThrow('SEM_ALUNOS_ATIVOS_OU_INATIVOS');
     expect(() => normalizeStudents([student, student], [contract], catalog, '2026-10-21')).toThrow('IDENTIDADE_SPONTE_INVALIDA');
   });
   it('importa alunos sem contrato elegível ou com contratos ambíguos sem inventar curso', () => {
     for (const contracts of [[], [{ ...contract, DataInicio: 'inválida' }], [contract, { ...contract, NomeCurso: 'Year 2' }]]) {
-      expect(normalizeStudents([{ ...student, TurmaAtual: 'Turma oficial' }], contracts, catalog, '2026-10-21')[0]).toMatchObject({
+      expect(normalizeStudents([{ ...student, TurmaAtual: 'Turma oficial' }], contracts, catalog, '2026-10-21').alunos[0]).toMatchObject({
         externalId: '42', situacao: 'ativo', curso: 'Não informado', turma: 'Turma oficial',
       });
     }

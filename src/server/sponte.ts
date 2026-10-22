@@ -11,6 +11,8 @@ export type SponteStudent = {
   externalId: string; matricula: string; nome: string; curso: string; turma: string;
   situacao: 'ativo' | 'inativo'; dataCadastroSponte: string | null;
 };
+export type SituacaoPulada = { situacao: string; total: number };
+export type SponteSnapshot = { alunos: SponteStudent[]; situacoesPuladas: SituacaoPulada[] };
 export class SponteError extends Error {
   constructor(public readonly code: string, public readonly diagnostic?: { method: Method; returnCode: string | null; returnFormat: 'numeric' | 'empty' | 'text' | 'structured' }) { super(code); }
 }
@@ -95,12 +97,14 @@ export function civilDate(value: unknown): string | null {
   return iso;
 }
 
-export function normalizeStudents(students: Row[], contracts: Row[], catalog: Row[], today: string): SponteStudent[] {
+export function normalizeStudents(students: Row[], contracts: Row[], catalog: Row[], today: string): SponteSnapshot {
   if (!students.length) throw new SponteError('LISTA_ALUNOS_VAZIA');
   const statuses = catalog.flatMap(x => rows((x.SituacoesAlunos as Row | undefined)?.SituacoesAlunos));
   const active = statuses.filter(x => text(x.SituacaoAlunoID) === '-1').map(x => normalize(x.Nome));
   const inactive = statuses.filter(x => text(x.SituacaoAlunoID) === '-2').map(x => normalize(x.Nome));
   if (active.length !== 1 || inactive.length !== 1 || !active[0] || !inactive[0] || active[0] === inactive[0]) throw new SponteError('CATALOGO_SITUACOES_INVALIDO');
+  const catalogNames = new Map(statuses.map(x => [normalize(x.Nome), text(x.Nome).slice(0, 60)]));
+  const skipped = new Map<string, number>();
   const seenIds = new Set<string>();
   const seenMatriculas = new Set<string>();
   const byStudent = new Map<string, Row[]>();
@@ -108,12 +112,18 @@ export function normalizeStudents(students: Row[], contracts: Row[], catalog: Ro
     const id = text(contract.AlunoID);
     byStudent.set(id, [...(byStudent.get(id) || []), contract]);
   }
-  return students.map(student => {
+  const alunos = students.flatMap((student): SponteStudent[] => {
+    const status = normalize(student.Situacao);
+    if (status !== active[0] && status !== inactive[0]) {
+      // Other situations (custom, leads, locked...) are neither imported nor changed.
+      // Only catalog names are reported: free text from a student record never leaves the adapter.
+      const label = !status ? 'Sem situação' : catalogNames.get(status) || 'Fora do catálogo';
+      skipped.set(label, (skipped.get(label) || 0) + 1);
+      return [];
+    }
     const id = text(student.AlunoID), matricula = text(student.NumeroMatricula), nome = text(student.Nome);
     if (!/^[1-9]\d*$/.test(id) || !matricula || matricula.length > 50 || nome.length < 2 || nome.length > 200 || seenIds.has(id) || seenMatriculas.has(matricula)) throw new SponteError('IDENTIDADE_SPONTE_INVALIDA');
     seenIds.add(id); seenMatriculas.add(matricula);
-    const status = normalize(student.Situacao);
-    if (status !== active[0] && status !== inactive[0]) throw new SponteError('SITUACAO_NAO_MAPEADA');
     const situacao = status === active[0] ? 'ativo' : 'inativo';
     // Prefer a valid contract covering 2027, then a currently valid contract.
     // A closed historical contract must not deactivate an active student.
@@ -131,11 +141,14 @@ export function normalizeStudents(students: Row[], contracts: Row[], catalog: Ro
     const turma = (unambiguous ? text(best.c.NomeTurma) : '') || text(student.TurmaAtual);
     if (curso.length > 100 || turma.length > 100) throw new SponteError('CURSO_SPONTE_INVALIDO');
     // Explicit allowlist: no CPF, passwords, contact details or raw XML leave this adapter.
-    return { externalId: id, matricula, nome, curso, turma, situacao, dataCadastroSponte: civilDate(student.DataCadastro) };
+    return [{ externalId: id, matricula, nome, curso, turma, situacao, dataCadastroSponte: civilDate(student.DataCadastro) }];
   });
+  if (!alunos.length) throw new SponteError('SEM_ALUNOS_ATIVOS_OU_INATIVOS');
+  const situacoesPuladas = [...skipped].map(([situacao, total]) => ({ situacao, total })).sort((a, b) => b.total - a.total).slice(0, 20);
+  return { alunos, situacoesPuladas };
 }
 
-export async function collectStudents(credentials: Credentials): Promise<SponteStudent[]> {
+export async function collectStudents(credentials: Credentials): Promise<SponteSnapshot> {
   const catalog = await querySponte('GetSituacoesAlunos', credentials);
   const students = await querySponte('GetAlunos4', credentials);
   const contracts = await querySponte('GetMatriculas', credentials);

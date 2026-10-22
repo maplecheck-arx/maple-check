@@ -37,10 +37,11 @@ export async function syncHandler(request: Request, cron: boolean): Promise<Resp
     if (!claim?.executar) return json({ sucesso: false, ignorada: true, motivo: claim?.motivo || 'em_andamento' });
     execucao = claim.execucao;
     if (!execucao) throw new SponteError('BANCO_INTEGRACAO');
-    const students = await collectStudents({ token, codigoCliente });
-    const { data, error: saveError } = await db.rpc('secretaria_sponte', { acao: 'concluir', execucao, dados: students });
+    const { alunos, situacoesPuladas } = await collectStudents({ token, codigoCliente });
+    if (situacoesPuladas.length) console.info('sponte_sync_situacoes_puladas', { execution: execucao, situacoesPuladas });
+    const { data, error: saveError } = await db.rpc('secretaria_sponte', { acao: 'concluir', execucao, dados: alunos });
     if (saveError) throw new SponteError('GRAVACAO_INTEGRACAO');
-    return json(data);
+    return json({ ...data, situacoesPuladas });
   } catch (error) {
     const codigo = error instanceof SponteError ? error.code : 'FALHA_INTEGRACAO';
     if (error instanceof SponteError && error.diagnostic) {
