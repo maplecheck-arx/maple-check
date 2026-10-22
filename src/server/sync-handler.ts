@@ -43,6 +43,9 @@ export async function syncHandler(request: Request, cron: boolean): Promise<Resp
     return json(data);
   } catch (error) {
     const codigo = error instanceof SponteError ? error.code : 'FALHA_INTEGRACAO';
+    if (error instanceof SponteError && error.diagnostic) {
+      console.error('sponte_sync_diagnostic', { execution: execucao, ...error.diagnostic });
+    }
     if (execucao) {
       // Store only an allowlisted diagnostic code, never a response, credential or student.
       try { await db.rpc('secretaria_sponte', { acao: 'falhar', execucao, dados: { codigo } }); } catch { /* Lease expires if the database is unavailable. */ }

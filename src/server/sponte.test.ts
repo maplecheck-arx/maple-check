@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, afterEach } from 'vitest';
-import { civilDate, normalizeStudents, parseSoap, querySponte, soapBody } from './sponte';
+import { civilDate, normalizeStudents, parseSoap, querySponte, soapBody, SponteError } from './sponte';
 import { syncHandler } from './sync-handler';
 const credentials = { token: 'teste<&"', codigoCliente: '123' };
 const envelope = (content: string) => `<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetAlunos4Response><GetAlunos4Result>${content}</GetAlunos4Result></GetAlunos4Response></soap:Body></soap:Envelope>`;
@@ -8,6 +8,24 @@ const contract = { AlunoID: '42', SituacaoID: '1', DataInicio: '01/01/2027', Dat
 const catalog = [{ SituacoesAlunos: { SituacoesAlunos: [{ SituacaoAlunoID: '-1', Nome: 'Ativo' }, { SituacaoAlunoID: '-2', Nome: 'Inativo' }] } }];
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 describe('Conector SOAP Sponte', () => {
+  it('preserva o código e método de rejeição sem registrar texto remoto ou dados pessoais', () => {
+    for (const [value, returnCode, returnFormat] of [
+      ['21 informe parâmetro segredo', '21', 'numeric'],
+      ['segredo pessoal', null, 'text'],
+      ['', null, 'empty'],
+      ['<string>segredo</string>', null, 'structured'],
+      ['123456789 segredo', null, 'numeric'],
+    ] as const) {
+      try {
+        parseSoap(envelope(`<wsAluno><RetornoOperacao>${value}</RetornoOperacao></wsAluno>`), 'GetAlunos4');
+        expect.fail('Resposta desconhecida deve ser rejeitada');
+      } catch (error) {
+        expect(error).toBeInstanceOf(SponteError);
+        expect((error as SponteError).diagnostic).toEqual({ method: 'GetAlunos4', returnCode, returnFormat });
+        expect(JSON.stringify(error)).not.toContain('segredo');
+      }
+    }
+  });
   it('escapa credenciais e inclui os parâmetros vazios exigidos pelo WSDL', () => {
     const body = soapBody('GetAlunos4', credentials);
     expect(body).toContain('teste&lt;&amp;&quot;');

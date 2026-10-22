@@ -12,7 +12,7 @@ export type SponteStudent = {
   situacao: 'ativo' | 'inativo'; dataCadastroSponte: string | null;
 };
 export class SponteError extends Error {
-  constructor(public readonly code: string) { super(code); }
+  constructor(public readonly code: string, public readonly diagnostic?: { method: Method; returnCode: string | null; returnFormat: 'numeric' | 'empty' | 'text' | 'structured' }) { super(code); }
 }
 const text = (v: unknown) => typeof v === 'string' ? v.trim() : '';
 const rows = (v: unknown): Row[] => v == null || v === '' ? [] : (Array.isArray(v) ? v : [v]).map(x => {
@@ -42,7 +42,12 @@ export function parseSoap(xml: string, method: Method): Row[] {
   for (const entry of entries) {
     // The manual enumerates 1 (success) and 200 (OK). Never forward remote messages.
     const code = text(entry.RetornoOperacao).match(/^(\d+)(?:\D|$)/)?.[1];
-    if (code !== '1' && code !== '200') throw new SponteError(code && ['23', '24', '25'].includes(code) ? `ACESSO_SPONTE_${code}` : 'RETORNO_SPONTE_INVALIDO');
+    if (code !== '1' && code !== '200') throw new SponteError(code && ['23', '24', '25'].includes(code) ? `ACESSO_SPONTE_${code}` : 'RETORNO_SPONTE_INVALIDO', {
+      method,
+      // Only bounded numeric status codes are diagnostic data; never retain remote prose.
+      returnCode: code && /^\d{1,3}$/.test(code) ? code : null,
+      returnFormat: code ? 'numeric' : entry.RetornoOperacao != null && typeof entry.RetornoOperacao !== 'string' ? 'structured' : text(entry.RetornoOperacao) ? 'text' : 'empty',
+    });
   }
   return entries;
 }
