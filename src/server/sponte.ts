@@ -24,7 +24,11 @@ const escapeXml = (s: string) => s.replace(/[<>&"']/g, c => ({ '<': '&lt;', '>':
 
 export function soapBody(method: Method, credentials: Credentials): string {
   if (!/^[1-9]\d{0,9}$/.test(credentials.codigoCliente) || Number(credentials.codigoCliente) > 2147483647 || !credentials.token.trim()) throw new SponteError('CONFIGURACAO_SPONTE');
-  return `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><${method} xmlns="${NS}"><nCodigoCliente>${credentials.codigoCliente}</nCodigoCliente><sToken>${escapeXml(credentials.token)}</sToken>${method === 'GetSituacoesAlunos' ? '' : '<sParametrosBusca></sParametrosBusca>'}</${method}></soap:Body></soap:Envelope>`;
+  // Both search methods document this student registration date filter. A blank
+  // search is rejected with code 21. Cover the full supported date range so the
+  // reconciliation includes older enrollments and students who became inactive.
+  const search = method === 'GetSituacoesAlunos' ? '' : '<sParametrosBusca>DataCadastro=1900/01/01 00:00 e 2100/12/31 23:59</sParametrosBusca>';
+  return `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><${method} xmlns="${NS}"><nCodigoCliente>${credentials.codigoCliente}</nCodigoCliente><sToken>${escapeXml(credentials.token)}</sToken>${search}</${method}></soap:Body></soap:Envelope>`;
 }
 
 export function parseSoap(xml: string, method: Method): Row[] {

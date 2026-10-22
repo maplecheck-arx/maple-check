@@ -34,10 +34,12 @@ describe('Conector SOAP Sponte', () => {
       }
     }
   });
-  it('escapa credenciais e inclui os parâmetros vazios exigidos pelo WSDL', () => {
+  it('escapa credenciais e envia filtro documentado para alunos e contratos', () => {
     const body = soapBody('GetAlunos4', credentials);
     expect(body).toContain('teste&lt;&amp;&quot;');
-    expect(body).toContain('<sParametrosBusca></sParametrosBusca>');
+    expect(body).toContain('<sParametrosBusca>DataCadastro=1900/01/01 00:00 e 2100/12/31 23:59</sParametrosBusca>');
+    expect(soapBody('GetMatriculas', credentials)).toContain('<sParametrosBusca>DataCadastro=1900/01/01 00:00 e 2100/12/31 23:59</sParametrosBusca>');
+    expect(soapBody('GetSituacoesAlunos', credentials)).not.toContain('sParametrosBusca');
     expect(() => soapBody('GetAlunos4', { ...credentials, codigoCliente: '123;456' })).toThrow('CONFIGURACAO');
   });
   it('lê SOAP preservando zeros e rejeita XML incompleto, entidades e faults', () => {
