@@ -4,7 +4,6 @@ import { AppProvider } from '../context/AppContext';
 
 export const metadata: Metadata = {
   title: 'Maple Check | Secretaria Maple Bear Araxá',
-  description: 'Sistema de conferência e acompanhamento operacional de matrículas e rematrículas 2027.',
 };
 
 export default function RootLayout({

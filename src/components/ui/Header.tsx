@@ -23,13 +23,12 @@ export function Header({ activeTab, onTabChange, onOpenNovoAluno }: HeaderProps)
   return (
     <>
       <header className="mobile-topbar">
-        <div className="brand-lockup"><span className="brand-mark"><Check size={22} /></span><span><strong>Maple Check</strong><small>Maple Bear Araxá</small></span></div>
+        <div className="brand-lockup"><span className="brand-mark"><Check size={22} /></span><span><strong>Maple Check</strong></span></div>
         <button type="button" className="icon-button" aria-label={menuOpen ? 'Fechar navegação' : 'Abrir navegação'} aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button>
       </header>
       {menuOpen && <button type="button" className="navigation-backdrop" aria-label="Fechar navegação" onClick={() => setMenuOpen(false)} />}
       <aside className={`sidebar ${menuOpen ? 'sidebar-open' : ''}`}>
-        <div className="sidebar-brand brand-lockup"><span className="brand-mark"><Check size={24} /></span><span><strong>Maple Check</strong><small>Maple Bear Araxá</small></span></div>
-        <div className="school-year"><span>Ano letivo</span><strong>2027</strong></div>
+        <div className="sidebar-brand brand-lockup"><span className="brand-mark"><Check size={24} /></span><span><strong>Maple Check</strong></span></div>
         <span className="navigation-label">Acompanhamento</span>
         <nav id="main-navigation" aria-label="Navegação principal">
           {links.map(link => <button key={link.id} type="button" className={`navigation-item ${activeTab === link.id ? 'is-active' : ''}`} aria-current={activeTab === link.id ? 'page' : undefined} onClick={() => navigate(link.id)}><link.icon size={18} aria-hidden="true" /><span>{link.name}</span>{link.count !== undefined && <span className="navigation-count">{link.count}</span>}</button>)}

@@ -77,17 +77,17 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
     : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="maple-checklist space-y-6">
       {/* Barra de Progresso e Métricas */}
       <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
           <div>
-            <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+            <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
               Progresso do Checklist ({processo.itens.length} etapas)
             </div>
-            <div className="text-xl sm:text-2xl font-black text-zinc-900 flex items-center gap-2">
+            <div className="text-xl sm:text-2xl font-semibold text-zinc-900 flex items-center gap-2">
               <span>{calc.concluidosObrigatorios} de {calc.totalObrigatorios} etapas concluídas</span>
-              <span className="text-xs font-bold text-zinc-600 bg-white border border-zinc-200 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-zinc-600 bg-white border border-zinc-200 px-2 py-0.5 rounded-full">
                 {pct}%
               </span>
             </div>
@@ -112,7 +112,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
         {/* Linha da Barra */}
         <div className="w-full bg-zinc-200 h-2.5 rounded-full overflow-hidden">
           <div
-            className={`h-full transition-all duration-300 rounded-full ${
+            className={`h-full transition-[width] duration-200 ease-out rounded-full ${
               pct === 100 ? 'bg-emerald-500' : 'bg-brand-500'
             }`}
             style={{ width: `${pct}%` }}
@@ -146,7 +146,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <div className="font-bold text-sm text-emerald-900">
+              <div className="font-semibold text-sm text-emerald-900">
                 Processo de Matrícula Aprovado
               </div>
               <div className="text-xs text-emerald-700">
@@ -155,7 +155,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
               </div>
             </div>
           </div>
-          <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full border border-emerald-300">
+          <span className="text-xs bg-emerald-100 text-emerald-800 font-semibold px-3 py-1 rounded-full border border-emerald-300">
             Aprovação Válida
           </span>
         </div>
@@ -171,7 +171,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
           return (
             <div
               key={item.id}
-              className={`group relative p-3 sm:p-3.5 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+              className={`group relative p-3 sm:p-3.5 rounded-xl border transition-[background-color,border-color] duration-140 flex items-center justify-between gap-3 ${
                 isDispensado
                   ? 'bg-zinc-100/60 border-zinc-200 text-zinc-400 opacity-75'
                   : item.concluido
@@ -182,12 +182,12 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
               }`}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                {/* Checkbox com foco acessível */}
+                {/* Checkbox com foco acessível e feedback de clique */}
                 <button
                   type="button"
                   disabled={salvando || readOnly || isAConfirmar || isDispensado || aluno.situacao === 'inativo'}
                   onClick={() => handleToggle(item)}
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 shrink-0 ${
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition-[transform,background-color,border-color] duration-140 active:scale-95 focus:outline-none focus:ring-2 focus:ring-brand-500 shrink-0 ${
                     isDispensado
                       ? 'bg-zinc-200 border border-zinc-300 cursor-not-allowed'
                       : item.concluido
@@ -202,7 +202,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
                     <CheckCircle2 className="w-4 h-4 text-white" />
                   )}
                   {isDispensado && (
-                    <span className="text-zinc-400 text-xs font-bold">—</span>
+                    <span className="text-zinc-400 text-xs font-semibold">—</span>
                   )}
                 </button>
 
@@ -221,21 +221,21 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
 
                     {/* Destaque para entrega de material */}
                     {isItemMaterial && (
-                      <span className="bg-red-50 text-brand-700 text-[10px] font-bold px-1.5 py-0.5 rounded border border-brand-200">
+                      <span className="bg-red-50 text-brand-700 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-brand-200">
                         Entrega Única
                       </span>
                     )}
 
                     {/* Tag Não se Aplica */}
                     {isDispensado && (
-                      <span className="bg-zinc-200 text-zinc-700 text-[10px] font-bold px-1.5 py-0.5 rounded">
+                      <span className="bg-zinc-200 text-zinc-700 text-[10px] font-semibold px-1.5 py-0.5 rounded">
                         Não se Aplica (Dispensado)
                       </span>
                     )}
 
                     {/* Tag A Confirmar */}
                     {isAConfirmar && (
-                      <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-1.5 py-0.5 rounded border border-amber-300">
+                      <span className="bg-amber-100 text-amber-800 text-[10px] font-semibold px-1.5 py-0.5 rounded border border-amber-300">
                         A Confirmar
                       </span>
                     )}
@@ -273,7 +273,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
                 {/* Tooltip Card */}
                 {activeTooltipId === item.id && (
                   <div className="absolute right-0 bottom-full mb-2 w-64 bg-zinc-900 text-white text-xs rounded-xl p-3 shadow-xl z-30 animate-fadeIn pointer-events-none">
-                    <div className="font-bold border-b border-zinc-800 pb-1 mb-1.5 text-zinc-200">
+                    <div className="font-semibold border-b border-zinc-800 pb-1 mb-1.5 text-zinc-200">
                       Detalhes da Etapa {item.numero}
                     </div>
                     {item.concluido ? (
@@ -327,7 +327,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
       <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h4 className="font-bold text-sm text-zinc-900 flex items-center gap-2">
+            <h4 className="font-semibold text-sm text-zinc-900 flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-brand-600" />
               Aprovação Final da Matrícula 2027
             </h4>
@@ -340,7 +340,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
             {isAprovado ? (
               <button
                 disabled
-                className="px-5 py-2.5 rounded-xl font-bold text-xs bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default"
+                className="px-5 py-2.5 rounded-xl font-semibold text-xs bg-emerald-100 text-emerald-800 border border-emerald-300 cursor-default"
               >
                 ✓ Processo Já Aprovado
               </button>
@@ -349,10 +349,10 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
                 type="button"
                 disabled={salvando || readOnly || isBloqueadoAprovacao || aluno.situacao === 'inativo'}
                 onClick={handleAprovar}
-                className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm ${
+                className={`px-5 py-2.5 rounded-xl font-semibold text-xs transition-[transform,background-color] duration-140 ease-out active:scale-[0.97] shadow-sm ${
                   isBloqueadoAprovacao || aluno.situacao === 'inativo'
                     ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed border border-zinc-300'
-                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20 hover:shadow-md'
+                    : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
                 }`}
               >
                 Realizar Aprovação Final
@@ -384,7 +384,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
           >
             <div className="flex items-center gap-3 text-rose-600 mb-3">
               <AlertTriangle className="w-6 h-6" />
-              <h3 className="text-base font-bold text-zinc-900">Revogação de Aprovação</h3>
+              <h3 className="text-base font-semibold text-zinc-900">Revogação de Aprovação</h3>
             </div>
             <p className="text-xs text-zinc-600 leading-relaxed">
               O processo do aluno <strong>{aluno.nome}</strong> já foi <strong>APROVADO</strong>.
@@ -403,7 +403,7 @@ export function ChecklistViewer({ aluno, processo, readOnly = false }: Checklist
               <button
                 type="button"
                 onClick={confirmarDesmarcacaoAprovado}
-                className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-sm"
+                className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-sm"
               >
                 Confirmar e Revogar Aprovação
               </button>

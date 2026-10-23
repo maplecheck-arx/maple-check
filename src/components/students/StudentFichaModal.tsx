@@ -78,34 +78,34 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-40 bg-zinc-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
+      className="dialog-backdrop fixed inset-0 z-40 flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
         ref={dialogRef} role="dialog" aria-modal="true" aria-label={`Ficha de ${aluno.nome}`} tabIndex={-1}
-        className="bg-white rounded-3xl shadow-2xl border border-zinc-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden my-auto"
+        className="maple-dialog bg-white w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden my-auto"
         onClick={e => e.stopPropagation()}
       >
         {/* Cabeçalho da Ficha */}
-        <div className="bg-zinc-900 text-white p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4 shrink-0">
+        <div className="dialog-heading p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-brand-500 text-white flex items-center justify-center font-black text-xl shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-brand-500 text-white flex items-center justify-center font-semibold text-xl shrink-0">
               {aluno.nome.charAt(0)}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="font-mono text-xs bg-zinc-800 text-brand-400 font-bold px-2 py-0.5 rounded border border-zinc-700">
+                <span className="font-mono text-xs bg-surface-muted text-text-muted font-semibold px-2 py-0.5 rounded border border-border">
                   Matrícula {aluno.matricula}
                 </span>
                 <StatusBadge tipo="situacao" valor={aluno.situacao} />
                 <StatusBadge tipo="processo" valor={processo.tipo} />
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight mt-1">
+              <h2 className="text-xl sm:text-2xl font-semibold text-text tracking-tight mt-1">
                 {aluno.nome}
               </h2>
               <div className="text-xs text-zinc-400 flex flex-wrap items-center gap-2 mt-0.5">
-                <span>Curso: <strong className="text-zinc-200">{aluno.curso}</strong></span>
-                {aluno.turma && <span>• Turma: <strong className="text-zinc-200">{aluno.turma}</strong></span>}
+                <span>Curso: <strong className="text-text">{aluno.curso}</strong></span>
+                {aluno.turma && <span>• Turma: <strong className="text-text">{aluno.turma}</strong></span>}
                 <span>• Ano Letivo: <strong>{aluno.anoLetivo}</strong></span>
               </div>
             </div>
@@ -115,7 +115,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
             {!isEditing && aluno.situacao !== 'inativo' && (
               <button
                 onClick={() => { setNome(aluno.nome); setCurso(aluno.curso); setTurma(aluno.turma || ''); setDataCadastro(aluno.dataCadastroSponte || ''); setJaEstudouOutraInstituicao(aluno.jaEstudouOutraInstituicao || 'a_confirmar'); setRevisaoEdicao(revisoes[aluno.id]); setIsEditing(true); }}
-                className="inline-flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1.5 rounded-xl text-xs font-semibold border border-zinc-700 transition-colors"
+                className="inline-flex items-center gap-1.5 bg-white hover:bg-surface-muted active:scale-[0.97] text-text px-3 py-1.5 rounded-lg text-xs font-semibold border border-border transition-[transform,background-color] duration-140"
                 title="Editar dados cadastrais locais"
               >
                 <Edit2 className="w-3.5 h-3.5" />
@@ -125,7 +125,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
 
             <button
               onClick={onClose}
-              className="p-2 text-zinc-400 hover:text-white rounded-xl hover:bg-zinc-800 transition-colors"
+              className="icon-button"
               aria-label="Fechar ficha"
             >
               <X className="w-5 h-5" />
@@ -136,7 +136,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
         {/* Corpo com Scroll */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-6 flex-1">
           {feedback && (
-            <div className="p-3 bg-blue-50 border border-blue-200 text-blue-900 rounded-xl text-xs font-semibold">
+            <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs font-semibold">
               {feedback}
             </div>
           )}
@@ -145,7 +145,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
           {isEditing ? (
             <form onSubmit={handleSalvarEdicao} className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-                <h3 className="font-bold text-sm text-zinc-900 flex items-center gap-2">
+                <h3 className="font-semibold text-sm text-zinc-900 flex items-center gap-2">
                   <Edit2 className="w-4 h-4 text-brand-600" />
                   Editar Dados Cadastrais Locais
                 </h3>
@@ -162,7 +162,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-zinc-700 mb-1">Nome Completo</label>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Nome Completo</label>
                   <input
                     type="text"
                     required
@@ -174,7 +174,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-700 mb-1">Curso</label>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Curso</label>
                   <input
                     type="text"
                     required
@@ -187,7 +187,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-700 mb-1">Turma (Opcional)</label>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Turma (Opcional)</label>
                   <input
                     type="text"
                     aria-label="Turma"
@@ -199,7 +199,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-zinc-700 mb-1">Data de Cadastro Sponte (Corte 01/09/2026)</label>
+                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Data de Cadastro Sponte (Corte 01/09/2026)</label>
                   <input
                     type="date"
                     aria-label="Data de cadastro informada"
@@ -212,7 +212,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
 
                 {processo.tipo === 'REMATRICULA' && (
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-zinc-700 mb-1">
+                    <label className="block text-xs font-semibold text-zinc-700 mb-1">
                       Já estudou em outra instituição? (Declaração de Transferência)
                     </label>
                     <select
@@ -233,14 +233,14 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-4 py-2 text-xs font-bold text-zinc-600 hover:bg-zinc-200 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-200 rounded-xl"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={salvando}
-                  className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm"
+                  className="inline-flex items-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-sm"
                 >
                   <Save className="w-3.5 h-3.5" />
                   Salvar Alterações Locais
@@ -256,19 +256,19 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
               </div>
               <div>
                 <span className="text-zinc-400 block font-semibold text-[10px] uppercase">Cadastro Sponte</span>
-                <span className="font-bold text-zinc-800">
+                <span className="font-semibold text-zinc-800">
                   {aluno.dataCadastroSponte ? aluno.dataCadastroSponte.split('-').reverse().join('/') : 'Data Ausente'}
                 </span>
               </div>
               <div>
                 <span className="text-zinc-400 block font-semibold text-[10px] uppercase">Validação Sponte</span>
-                <span className={aluno.validadoSponte ? 'text-emerald-700 font-bold' : 'text-purple-700 font-bold'}>
+                <span className={aluno.validadoSponte ? 'text-emerald-700 font-semibold' : 'text-zinc-700 font-semibold'}>
                   {aluno.validadoSponte ? 'Confirmado na Origem' : 'Pendente de Confirmação'}
                 </span>
               </div>
               <div>
                 <span className="text-zinc-400 block font-semibold text-[10px] uppercase">Ano do Processo</span>
-                <span className="font-bold text-zinc-800">2027</span>
+                <span className="font-semibold text-zinc-800">2027</span>
               </div>
             </div>
           )}
@@ -278,7 +278,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
 
           {/* Histórico e Auditoria Simples */}
           <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-5">
-            <h4 className="font-bold text-sm text-zinc-900 flex items-center gap-2 mb-3">
+            <h4 className="font-semibold text-sm text-zinc-900 flex items-center gap-2 mb-3">
               <History className="w-4 h-4 text-zinc-600" />
               Histórico de Eventos do Aluno ({processo.eventos.length})
             </h4>
@@ -304,7 +304,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
           {isAdmin && (
             <div className="border border-rose-200 bg-rose-50/50 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h4 className="font-bold text-sm text-rose-900 flex items-center gap-2">
+                <h4 className="font-semibold text-sm text-rose-900 flex items-center gap-2">
                   <Trash2 className="w-4 h-4 text-rose-600" />
                   Excluir cadastro
                 </h4>
@@ -316,7 +316,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
               <button
                 type="button"
                 onClick={() => setShowConfirmExclusao(true)}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors shrink-0"
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-xs transition-colors shrink-0"
               >
                 Excluir cadastro
               </button>
@@ -336,7 +336,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
             >
               <div className="flex items-center gap-2 text-rose-600 mb-2">
                 <AlertTriangle className="w-5 h-5" />
-                <h3 className="text-base font-bold text-zinc-900">Confirmar Exclusão Definitiva</h3>
+                <h3 className="text-base font-semibold text-zinc-900">Confirmar Exclusão Definitiva</h3>
               </div>
               <p className="text-xs text-zinc-600">
                 Você está prestes a excluir permanentemente o aluno:
@@ -355,7 +355,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
                     value={confirmacaoTexto}
                 onChange={e => setConfirmacaoTexto(e.target.value)}
                 placeholder={`Digite ${aluno.matricula}`}
-                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-rose-500 focus:outline-none mb-4"
+                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-mono font-semibold focus:ring-2 focus:ring-rose-500 focus:outline-none mb-4"
               />
 
               <div className="flex justify-end gap-2">
@@ -370,7 +370,7 @@ export function StudentFichaModal({ aluno, onClose }: StudentFichaModalProps) {
                   type="button"
                   disabled={salvando || confirmacaoTexto.trim() !== aluno.matricula}
                   onClick={handleConfirmarExclusao}
-                  className="px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl shadow-sm"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-40 disabled:cursor-not-allowed rounded-xl shadow-sm"
                 >
                   Excluir Definitivamente
                 </button>

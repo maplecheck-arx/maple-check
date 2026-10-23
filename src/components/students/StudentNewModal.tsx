@@ -42,31 +42,31 @@ export function StudentNewModal({ onClose }: StudentNewModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4"
+      className="dialog-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <div
         ref={dialogRef} role="dialog" aria-modal="true" aria-label="Cadastrar aluno" tabIndex={-1}
-        className="bg-white rounded-2xl shadow-2xl border border-zinc-200 w-full max-w-lg max-h-[92dvh] overflow-y-auto"
+        className="maple-dialog bg-white w-full max-w-lg max-h-[92dvh] overflow-y-auto"
         onClick={e => e.stopPropagation()}
       >
-        <div className="bg-zinc-900 text-white p-5 flex items-center justify-between">
+        <div className="dialog-heading p-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <UserPlus className="w-5 h-5 text-brand-500" />
-            <h3 className="font-bold text-base text-white">Cadastrar aluno</h3>
+            <h3 className="font-semibold text-base text-text">Cadastrar aluno</h3>
           </div>
           <button
             onClick={onClose}
             aria-label="Fechar cadastro"
-            className="text-zinc-400 hover:text-white p-1 rounded-lg"
+            className="icon-button"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div className="bg-purple-50 border border-purple-200 p-3.5 rounded-2xl text-xs text-purple-900 flex items-start gap-2">
-            <Info className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+          <div className="bg-zinc-50 border border-zinc-200 p-3.5 rounded-2xl text-xs text-zinc-900 flex items-start gap-2">
+            <Info className="w-4 h-4 text-zinc-600 shrink-0 mt-0.5" />
             <div>
               <strong>Aguardando Validação no Sponte:</strong> Este aluno será cadastrado provisoriamente.
               O checklist pode ser preenchido, mas a <strong>aprovação final fica bloqueada</strong> até a
@@ -83,7 +83,7 @@ export function StudentNewModal({ onClose }: StudentNewModalProps) {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Número de Matrícula *
               </label>
               <input
@@ -93,13 +93,13 @@ export function StudentNewModal({ onClose }: StudentNewModalProps) {
                     value={matricula}
                 onChange={e => setMatricula(e.target.value)}
                 placeholder="Ex: 0995"
-                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-mono font-bold focus:ring-2 focus:ring-brand-500 focus:bg-white focus:outline-none"
+                className="w-full px-3 py-2 bg-zinc-50 border border-zinc-300 rounded-xl text-xs font-mono font-semibold focus:ring-2 focus:ring-brand-500 focus:bg-white focus:outline-none"
               />
               <span className="text-[10px] text-zinc-400">Preserva zeros à esquerda</span>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Data de cadastro informada
               </label>
               <input
@@ -113,7 +113,7 @@ export function StudentNewModal({ onClose }: StudentNewModalProps) {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-zinc-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Nome Completo do Aluno *
               </label>
               <input
@@ -128,7 +128,7 @@ export function StudentNewModal({ onClose }: StudentNewModalProps) {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Curso Previsto *
               </label>
               <select
@@ -150,7 +150,7 @@ export function StudentNewModal({ onClose }: StudentNewModalProps) {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Turma (Opcional)
               </label>
               <input
@@ -164,7 +164,7 @@ export function StudentNewModal({ onClose }: StudentNewModalProps) {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-zinc-700 mb-1">
+              <label className="block text-xs font-semibold text-zinc-700 mb-1">
                 Já estudou em outra instituição? (Para rematrículas)
               </label>
               <select
@@ -184,14 +184,14 @@ export function StudentNewModal({ onClose }: StudentNewModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-bold text-zinc-600 hover:bg-zinc-100 rounded-xl"
+              className="px-4 py-2 text-xs font-semibold text-zinc-600 hover:bg-zinc-100 rounded-xl"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={salvando}
-              className="px-5 py-2 text-xs font-bold text-white bg-brand-500 hover:bg-brand-600 rounded-xl shadow-sm"
+              className="px-5 py-2 text-xs font-semibold text-white bg-brand-500 hover:bg-brand-600 rounded-xl shadow-sm"
             >
               {salvando ? 'Salvando…' : 'Cadastrar aluno'}
             </button>

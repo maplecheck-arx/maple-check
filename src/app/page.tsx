@@ -8,7 +8,7 @@ import { StudentTable } from '../components/students/StudentTable';
 import { LoadingView } from '../components/ui/LoadingView';
 import { SponteStatus } from '../components/ui/SponteStatus';
 import { calcularMetricasOperacionais } from '../services/metrics';
-import { Users, CheckCircle2, Clock3, AlertCircle, Plus, ArrowUpRight, CalendarDays } from 'lucide-react';
+import { Users, CheckCircle2, Clock3, AlertCircle, Plus, ArrowUpRight } from 'lucide-react';
 
 const LoginView = dynamic(() => import('../components/auth/LoginView').then(m => m.LoginView), { loading: () => <LoadingView label="Abrindo o acesso…" fullScreen /> });
 const StudentFichaModal = dynamic(() => import('../components/students/StudentFichaModal').then(m => m.StudentFichaModal), { loading: () => <div className="loading-overlay"><LoadingView label="Abrindo a ficha…" /></div> });
@@ -45,7 +45,7 @@ export default function Home() {
         <main id="main-content" className="app-content">
           <SponteStatus />
           <div className="page-heading">
-            <div><div className="page-eyebrow"><CalendarDays size={14} />Secretaria / Ano letivo 2027</div><h1>{info.title}</h1><p>{info.description}</p></div>
+            <div><div className="page-eyebrow">Secretaria <span className="text-zinc-300" aria-hidden="true">•</span> Ano letivo 2027</div><h1>{info.title}</h1><p>{info.description}</p></div>
             {(activeTab === 'operacional' || activeTab === 'provisorios') && <button type="button" className="primary-button" onClick={() => setShowNovoAlunoModal(true)}><Plus size={18} />Cadastrar aluno</button>}
           </div>
           {activeTab === 'operacional' && <>

@@ -53,17 +53,17 @@ export function ReportsView() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="maple-reports space-y-6">
       {exportError && <div role="alert" className="notice notice-error">{exportError}</div>}
       {/* Cabeçalho da Seção de Relatórios com Botões de Exportação */}
       <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <div className="inline-flex items-center gap-2 text-xs font-bold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200 mb-2">
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200 mb-2">
             <span>Ano Letivo 2027</span>
             <span>•</span>
             <span>Unidade Araxá</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-zinc-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-semibold text-zinc-900 tracking-tight">
             Relatório Gerencial de Matrículas
           </h2>
           <p className="text-xs text-zinc-500 mt-1">
@@ -76,7 +76,7 @@ export function ReportsView() {
           <button
             onClick={handleExportExcel}
             disabled={isExportingExcel}
-            className="inline-flex items-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 secondary-button"
             title="Exportar planilha real formatada em .xlsx"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -87,7 +87,7 @@ export function ReportsView() {
           <button
             onClick={handleExportPdf}
             disabled={isExportingPdf}
-            className="inline-flex items-center gap-2 bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition-all disabled:opacity-50"
+            className="inline-flex items-center gap-2 primary-button"
             title="Exportar documento oficial formatado em .pdf"
           >
             <FileText className="w-4 h-4" />
@@ -98,17 +98,17 @@ export function ReportsView() {
 
       {/* Grid de Métricas Operacionais Principais (Ativos Validados) */}
       <div>
-        <div className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 px-1">
+        <div className="text-xs font-semibold text-zinc-600 mb-3 px-1">
           Acompanhamento Operacional (Alunos Ativos Validados)
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Total Acompanhado */}
-          <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-xs">
+          <div className="overview-metric tone-neutral">
             <div className="flex items-center justify-between text-zinc-500 text-xs font-semibold">
               <span>Total Acompanhado</span>
               <Users className="w-4 h-4 text-zinc-400" />
             </div>
-            <div className="text-3xl font-black text-zinc-900 mt-2">
+            <div className="text-3xl font-semibold text-zinc-900 mt-2">
               {metricas.totalAcompanhado}
             </div>
             <div className="text-[11px] text-zinc-400 mt-1">
@@ -117,12 +117,12 @@ export function ReportsView() {
           </div>
 
           {/* Aprovados */}
-          <div className="bg-white border border-emerald-200 rounded-2xl p-5 shadow-xs bg-emerald-50/20">
+          <div className="overview-metric tone-success">
             <div className="flex items-center justify-between text-emerald-700 text-xs font-semibold">
               <span>Processos Aprovados</span>
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             </div>
-            <div className="text-3xl font-black text-emerald-700 mt-2">
+            <div className="text-3xl font-semibold text-emerald-700 mt-2">
               {metricas.aprovados}
             </div>
             <div className="text-[11px] text-emerald-600 mt-1">
@@ -131,26 +131,26 @@ export function ReportsView() {
           </div>
 
           {/* Aguardando Aprovação */}
-          <div className="bg-white border border-blue-200 rounded-2xl p-5 shadow-xs bg-blue-50/20">
-            <div className="flex items-center justify-between text-blue-700 text-xs font-semibold">
+          <div className="overview-metric tone-waiting">
+            <div className="flex items-center justify-between text-amber-700 text-xs font-semibold">
               <span>Aguardando Aprovação</span>
-              <Clock className="w-4 h-4 text-blue-600" />
+              <Clock className="w-4 h-4 text-amber-600" />
             </div>
-            <div className="text-3xl font-black text-blue-700 mt-2">
+            <div className="text-3xl font-semibold text-amber-700 mt-2">
               {metricas.aguardandoAprovacao}
             </div>
-            <div className="text-[11px] text-blue-600 mt-1">
+            <div className="text-[11px] text-amber-600 mt-1">
               100% dos documentos conferidos
             </div>
           </div>
 
           {/* Processos com Pendências */}
-          <div className="bg-white border border-amber-200 rounded-2xl p-5 shadow-xs bg-amber-50/20">
+          <div className="overview-metric tone-pending">
             <div className="flex items-center justify-between text-amber-800 text-xs font-semibold">
               <span>Processos Pendentes</span>
               <AlertCircle className="w-4 h-4 text-amber-600" />
             </div>
-            <div className="text-3xl font-black text-amber-800 mt-2">
+            <div className="text-3xl font-semibold text-amber-800 mt-2">
               {metricas.pendentes}
             </div>
             <div className="text-[11px] text-amber-700 mt-1">
@@ -165,7 +165,7 @@ export function ReportsView() {
         {/* Entregas de Material */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-brand-600 text-xs font-bold mb-1">
+            <div className="flex items-center gap-2 text-brand-600 text-xs font-semibold mb-1">
               <Package className="w-4 h-4" />
               <span>Entregas de Material (Mochila e Chinook)</span>
             </div>
@@ -174,10 +174,10 @@ export function ReportsView() {
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-zinc-100 flex items-baseline justify-between">
-            <span className="text-3xl font-black text-zinc-900">
+            <span className="text-3xl font-semibold text-zinc-900">
               {metricas.entregasMaterialMochilaChinook}
             </span>
-            <span className="text-xs font-bold text-zinc-500">
+            <span className="text-xs font-semibold text-zinc-500">
               de {metricas.novasMatriculas} novas matrículas
             </span>
           </div>
@@ -186,7 +186,7 @@ export function ReportsView() {
         {/* Cadastros Manuais Aguardando Validação */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-purple-600 text-xs font-bold mb-1">
+            <div className="flex items-center gap-2 text-zinc-600 text-xs font-semibold mb-1">
               <Users className="w-4 h-4" />
               <span>Cadastros Provisórios da Secretaria</span>
             </div>
@@ -195,10 +195,10 @@ export function ReportsView() {
             </p>
           </div>
           <div className="mt-4 pt-3 border-t border-zinc-100 flex items-baseline justify-between">
-            <span className="text-3xl font-black text-purple-700">
+            <span className="text-3xl font-semibold text-zinc-700">
               {metricas.aguardandoValidacaoSponte}
             </span>
-            <span className="text-xs text-purple-600 font-semibold">
+            <span className="text-xs text-zinc-600 font-semibold">
               Aprovação bloqueada
             </span>
           </div>
@@ -207,7 +207,7 @@ export function ReportsView() {
         {/* Histórico de Saídas (Arquivados) */}
         <div className="bg-white border border-zinc-200 rounded-2xl p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-zinc-600 text-xs font-bold mb-1">
+            <div className="flex items-center gap-2 text-zinc-600 text-xs font-semibold mb-1">
               <Archive className="w-4 h-4" />
               <span>Alunos Arquivados (Histórico de Saídas)</span>
             </div>
@@ -219,7 +219,7 @@ export function ReportsView() {
             </div>
           </div>
           <div className="mt-4 pt-3 border-t border-zinc-100 flex items-baseline justify-between">
-            <span className="text-2xl font-black text-zinc-700">
+            <span className="text-2xl font-semibold text-zinc-700">
               {metricas.saidasHistorico.total}
             </span>
             <span className="text-xs text-zinc-400 font-medium">
@@ -233,7 +233,7 @@ export function ReportsView() {
       <div className="bg-white border border-zinc-200 rounded-3xl p-6 shadow-xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-bold text-base text-zinc-900">
+            <h3 className="font-semibold text-base text-zinc-900">
               Relação de Etapas Pendentes por Aluno Ativo ({pendenciasPorAluno.length})
             </h3>
             <p className="text-xs text-zinc-500">
@@ -252,17 +252,17 @@ export function ReportsView() {
               <div key={p.alunoId} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-semibold text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded">
                       {p.matricula}
                     </span>
-                    <span className="font-bold text-xs text-zinc-900">{p.nome}</span>
+                    <span className="font-semibold text-xs text-zinc-900">{p.nome}</span>
                     <span className="text-[10px] text-zinc-400">({p.curso} • {p.tipo})</span>
                   </div>
                   <div className="text-xs text-amber-800 font-medium mt-1">
                     Pendências: {p.etapasPendentes.join('; ')}
                   </div>
                 </div>
-                <span className="text-xs font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 shrink-0 self-start sm:self-auto">
+                <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 shrink-0 self-start sm:self-auto">
                   {p.etapasPendentes.length} pendente(s)
                 </span>
               </div>

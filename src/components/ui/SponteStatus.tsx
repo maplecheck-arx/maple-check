@@ -42,10 +42,10 @@ export function SponteStatus() {
   }
   return <>
     <div className="integration-status">
-      <span><span className="status-dot" />Sponte: {label}</span>
+      <span><span className={`status-dot ${sponte?.status === 'erro' ? 'is-error' : updated && sponte?.status !== 'em_andamento' ? 'is-success' : ''}`} aria-hidden="true" /><span><strong>Sponte</strong><span className="sync-label">{label}</span></span></span>
       <div className="flex flex-wrap gap-3">
-        <button type="button" className="text-button" disabled={salvando || running} onClick={() => void atualizarDados()}>Atualizar lista</button>
-        <button type="button" className="text-button" disabled={salvando || running || sponte?.status === 'em_andamento'} onClick={() => void synchronize()}>{running ? 'Sincronizando…' : 'Sincronizar Sponte'}</button>
+        <button type="button" className="secondary-button" disabled={salvando || running} onClick={() => void atualizarDados()}>Atualizar lista</button>
+        <button type="button" className="secondary-button" disabled={salvando || running || sponte?.status === 'em_andamento'} onClick={() => void synchronize()}>{running ? 'Sincronizando…' : 'Sincronizar Sponte'}</button>
       </div>
     </div>
     {message && <p className={`mb-4 text-sm ${failed ? 'text-red-700' : 'text-slate-600'}`} role={failed ? 'alert' : 'status'}>{message}</p>}
